@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terbium</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="title" content="Terbium" />
+    <meta name="description" content="The next generation of Terbium. built to last." />
+    <meta name="theme-color" content="#D16FFF" />
+    <meta property="og:image" content="/tb.svg" />
+    <meta name="google-adsense-account" content="ca-pub-2875368391887289" />
+    <script src="/tfs/tfs.js"></script>
+    <script>
+      (async () => {
+        const handle = await navigator.storage.getDirectory();
+        window.tfs = new window.tfs(handle)
+        if (typeof window.tb === "undefined") window.tb = {};
+        if (typeof window.tb.fs === "undefined" && typeof window.tb !== "undefined") {
+          console.log("[FS] File System Ready");
+          window.tb.fs = window.tfs.fs;
+          window.tb.buffer = window.tfs.buffer;
+          window.tb.sh = window.tfs.shell;
+        }
+        if (localStorage.getItem("eruda")) {
+          const erudaScript = document.createElement("script");
+          erudaScript.src = "https://cdn.jsdelivr.net/npm/eruda";
+          erudaScript.onload = () => {
+            window.eruda.init();
+          };
+          document.head.appendChild(erudaScript);
+        }
+      })();
+    </script>
+
+    <!-- Your compiled OS bundle -->
+    <script type="module" crossorigin src="/assets/index-CrkkR37W.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Cy6RrQnF.css">
+  </head>
+
+  <body>
+    <div id="root" class="flex flex-col h-full bg-[#0e0e0e] overflow-hidden"></div>
+
+    <script src="/scram/scramjet.all.js"></script>
+    <script src="assets/libs/filer.min.js"></script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1RW33JJQS2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1RW33JJQS2');
+    </script>
+
+    <!-- ⭐ Dynamic App Loader Patch (this is the important part) -->
+    <script>
+    (async () => {
+      try {
+        // Fetch directory listing of /apps/
+        const res = await fetch('/apps/');
+        const text = await res.text();
+
+        // Find all .tapp folders
+        const matches = [...text.matchAll(/href="([^"]+\.tapp)\/"/g)];
+        const apps = matches.map(m => m[1]);
+
+        const loadedApps = [];
+
+        // Load each manifest
+        for (const app of apps) {
+          try {
+            const manifest = await fetch(`/apps/${app}/index.json`).then(r => r.json());
+            loadedApps.push({
+              id: manifest.id,
+              name: manifest.name,
+              icon: `/apps/${app}/${manifest.icon}`,
+              entry: `/apps/${app}/${manifest.entry}`
+            });
+          } catch (e) {
+            console.warn(`Failed to load ${app}`, e);
+          }
+        }
+
+        // Expose to OS
+        window.dynamicApps = loadedApps;
+        console.log("Dynamic apps loaded:", loadedApps);
+      } catch (e) {
+        console.warn("Failed to scan /apps/", e);
+      }
+    })();
+    </script>
+
+  </body>
+</html>
